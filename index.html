@@ -272,6 +272,22 @@ body {
   <!-- STUDIO VIEW -->
   <section class="view active" id="view-studio">
     <div class="panel">
+      <h2>Welcome to the TCG Tattoo Card Game International Project</h2>
+      <p style="font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:12px;">
+        You're here because you've been invited to take part in the first-ever worldwide tattoo artist collaboration — a chance to have your artwork immortalized in a spectacular limited-edition trading card collection.
+      </p>
+      <p style="font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:12px;">
+        <strong style="color:var(--text);">Perks:</strong> every card featuring your work doubles as free advertising for you. Select ultra-rare cards will also carry real-world value — each one acts as a gift card redeemable directly with the artist whose design appears on it. Royalties are paid out on redemption, and can be exchanged for tattooing time with that artist.
+      </p>
+      <p style="font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:12px;">
+        <strong style="color:var(--text);">Submission guidelines:</strong> submissions must be original artwork — drawings, paintings, or digital designs. Photographs of tattoos will not be accepted.
+      </p>
+      <p style="font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:0;">
+        Please include your social media links, studio name or website, and anything else you'd like featured — a short bio or a meaningful quote works well. This information, along with your location, will appear on the back of your card.
+      </p>
+    </div>
+
+    <div class="panel">
       <h2>Artist profile</h2>
       <p class="panel-sub">Visible to you and the collection owner only.</p>
       <div class="field">
@@ -279,8 +295,12 @@ body {
         <input type="text" id="profileName" placeholder="Your artist name">
       </div>
       <div class="field">
+        <label>Location</label>
+        <input type="text" id="profileLocation" placeholder="e.g. Melbourne, Australia">
+      </div>
+      <div class="field">
         <label>Short description</label>
-        <textarea id="profileBio" placeholder="A short bio about you and your tattoo style..."></textarea>
+        <textarea id="profileBio" placeholder="A short bio, meaningful quote, or a bit about your tattoo style..."></textarea>
       </div>
       <div class="field">
         <label>Social links / website</label>
@@ -340,6 +360,7 @@ body {
         <button class="back-link" id="backToArtists">← Back to all artists</button>
         <div class="panel">
           <h2 id="artistDetailName"></h2>
+          <p class="panel-sub" id="artistDetailLocation" style="margin-bottom:6px;"></p>
           <p class="panel-sub" id="artistDetailBio"></p>
           <div class="social-links" id="artistDetailLinks"></div>
         </div>
@@ -548,6 +569,7 @@ document.getElementById("controlSubTabs").addEventListener("click", (e) => {
 
 function loadMyProfileIntoForm() {
   document.getElementById("profileName").value = myProfile.displayName || "";
+  document.getElementById("profileLocation").value = myProfile.location || "";
   document.getElementById("profileBio").value = myProfile.bio || "";
   renderSocialLinksEditor(myProfile.socialLinks || []);
 }
@@ -584,6 +606,7 @@ document.getElementById("saveProfileBtn").addEventListener("click", async () => 
 
   const data = {
     displayName: document.getElementById("profileName").value.trim(),
+    location: document.getElementById("profileLocation").value.trim(),
     bio: document.getElementById("profileBio").value.trim(),
     socialLinks,
   };
@@ -741,6 +764,7 @@ async function openArtistDetail(artist) {
   document.getElementById("artistListWrap").hidden = true;
   document.getElementById("artistDetailWrap").hidden = false;
   document.getElementById("artistDetailName").textContent = artist.displayName || "(unnamed artist)";
+  document.getElementById("artistDetailLocation").textContent = artist.location || "";
   document.getElementById("artistDetailBio").textContent = artist.bio || "";
 
   const linksWrap = document.getElementById("artistDetailLinks");
