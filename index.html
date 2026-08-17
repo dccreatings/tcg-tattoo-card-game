@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCG-Tattoo Card Game</title>
+<style>
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1e222b;
+  --border: #2a2f3a;
+  --text: #e8eaed;
+  --text-dim: #9aa1ac;
+  --accent: #ff5c8a;
+  --accent-dim: #5a2438;
+  --good: #3ddc97;
+  --warn: #ffb84d;
+  --danger: #ff6b6b;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark { font-size: 24px; color: var(--accent); }
+.brand h1 { font-size: 19px; margin: 0; }
+
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px 4px 4px;
+}
+
+.user-avatar { width: 24px; height: 24px; border-radius: 50%; }
+.user-name { font-size: 12px; color: var(--text-dim); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.owner-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: #12070c; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text); border-color: var(--text-dim); }
+.btn-small { padding: 6px 10px; font-size: 12px; border-radius: 6px; }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(255,107,107,0.4); }
+
+.tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+
+.view { display: none; }
+.view.active { display: block; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.panel h2 { margin: 0 0 4px; font-size: 16px; }
+.panel .panel-sub { color: var(--text-dim); font-size: 12px; margin: 0 0 16px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 12px; color: var(--text-dim); }
+.field input, .field textarea {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.field textarea { resize: vertical; min-height: 70px; }
+.field input:focus, .field textarea:focus { outline: 1px solid var(--accent); }
+
+.social-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.social-row input { flex: 1; min-width: 0; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+
+.card-tile {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.card-tile img { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #0a0b0e; display: block; }
+.card-tile-body { padding: 10px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.card-tile-title { font-weight: 600; font-size: 13px; }
+.card-tile-desc { font-size: 11px; color: var(--text-dim); flex: 1; }
+.card-tile-actions { display: flex; gap: 6px; margin-top: 6px; }
+
+.artist-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.artist-avatar {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #12070c; flex-shrink: 0;
+}
+.artist-info { flex: 1; min-width: 0; }
+.artist-name { font-weight: 600; font-size: 14px; }
+.artist-bio { font-size: 12px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.artist-count { font-size: 12px; color: var(--text-dim); }
+
+.social-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.social-links a { color: var(--accent); font-size: 12px; text-decoration: none; font-weight: 600; }
+.social-links a:hover { text-decoration: underline; }
+
+.set-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.set-name { font-weight: 600; font-size: 14px; }
+.set-meta { font-size: 12px; color: var(--text-dim); }
+.status-badge {
+  font-size: 10px; padding: 3px 9px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: 0.03em; font-weight: 700;
+}
+.status-badge.planning { background: rgba(255,184,77,0.15); color: var(--warn); }
+.status-badge.in_production { background: rgba(108,140,255,0.15); color: #6c8cff; }
+.status-badge.released { background: rgba(61,220,151,0.15); color: var(--good); }
+
+.back-link { background: none; border: none; color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 14px; }
+
+.empty-note { color: var(--text-dim); font-size: 13px; text-align: center; padding: 30px 0; }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+}
+.modal-overlay[hidden] { display: none; }
+.modal { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; width: 100%; max-width: 460px; max-height: 85vh; overflow-y: auto; }
+.modal h3 { margin: 0 0 14px; font-size: 16px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+
+.checkbox-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-dim); margin-bottom: 14px; }
+.checkbox-row input { margin-top: 2px; }
+
+.search-input {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  padding: 9px 12px; border-radius: 8px; font-size: 13px; width: 100%; margin-bottom: 12px;
+}
+
+.pick-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; }
+.pick-row:hover { background: rgba(255,255,255,0.03); }
+.pick-thumb { width: 36px; height: 44px; object-fit: cover; border-radius: 4px; background: #0a0b0e; flex-shrink: 0; }
+.pick-info { flex: 1; min-width: 0; font-size: 12px; }
+.pick-info .pick-title { font-weight: 600; }
+.pick-info .pick-artist { color: var(--text-dim); }
+
+.auth-gate { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--bg); }
+.auth-gate[hidden] { display: none; }
+.auth-card { text-align: center; max-width: 360px; }
+.auth-card .brand-mark { font-size: 40px; display: block; margin-bottom: 10px; }
+.auth-card h1 { font-size: 22px; margin: 0 0 10px; }
+.auth-card p { color: var(--text-dim); font-size: 14px; margin: 0 0 22px; line-height: 1.5; }
+.auth-error { color: var(--danger); font-size: 13px; margin-top: 14px; }
+.loading-note { color: var(--text-dim); font-size: 13px; text-align: center; padding: 20px 0; }
+
+@media (max-width: 640px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<div id="authGate" class="auth-gate">
+  <div class="auth-card">
+    <span class="brand-mark">🂠</span>
+    <h1>TCG-Tattoo Card Game</h1>
+    <p>A trading card game built from real tattoo artistry. Artists from around the world submit their original designs, and a selection becomes the artwork for physical, collectible cards.</p>
+    <p>Sign in to create your own artist page, submit designs to the library, and see which sets your work ends up in.</p>
+    <button id="signInBtn" class="btn btn-primary">Sign in with Google</button>
+    <p class="auth-error" id="authError" hidden></p>
+  </div>
+</div>
+
+<div class="app" id="appRoot" hidden>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">🂠</span>
+      <h1>TCG-Tattoo Card Game</h1>
+    </div>
+    <div class="topbar-actions">
+      <div class="user-chip">
+        <img id="userAvatar" class="user-avatar" alt="">
+        <span class="user-name" id="userName"></span>
+        <span class="owner-badge" id="ownerBadge" hidden>Owner</span>
+      </div>
+      <button id="signOutBtn" class="btn btn-ghost btn-small">Sign out</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="mainTabs">
+    <button class="tab-btn active" data-view="studio">My Studio</button>
+    <button class="tab-btn" data-view="control" id="controlTabBtn" hidden>Control Room</button>
+  </nav>
+
+  <!-- STUDIO VIEW -->
+  <section class="view active" id="view-studio">
+    <div class="panel">
+      <h2>Artist profile</h2>
+      <p class="panel-sub">Visible to you and the collection owner only.</p>
+      <div class="field">
+        <label>Display name</label>
+        <input type="text" id="profileName" placeholder="Your artist name">
+      </div>
+      <div class="field">
+        <label>Short description</label>
+        <textarea id="profileBio" placeholder="A short bio about you and your tattoo style..."></textarea>
+      </div>
+      <div class="field">
+        <label>Social links / website</label>
+        <div id="socialLinksList"></div>
+        <button type="button" id="addSocialBtn" class="btn btn-ghost btn-small" style="align-self:flex-start;">+ Add link</button>
+      </div>
+      <button id="saveProfileBtn" class="btn btn-primary">Save profile</button>
+    </div>
+
+    <div class="panel">
+      <h2>Submit a design</h2>
+      <p class="panel-sub">Images are compressed for preview purposes — send print-resolution files separately when a design is selected.</p>
+      <form id="designForm">
+        <div class="field">
+          <label>Title</label>
+          <input type="text" id="designTitle" required placeholder="e.g. Serpent & Rose">
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="designDescription" placeholder="Style, meaning, technique..."></textarea>
+        </div>
+        <div class="field">
+          <label>Image</label>
+          <input type="file" id="designImage" accept="image/*" required>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="licenseAgree" required>
+          <label for="licenseAgree">I agree this design may be used as artwork for TCG-Tattoo Card Game cards.</label>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitDesignBtn">Submit design</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Your designs</h2>
+      <div class="grid" id="myDesignsGrid"></div>
+      <p class="empty-note" id="myDesignsEmpty" hidden>No designs submitted yet.</p>
+    </div>
+  </section>
+
+  <!-- CONTROL ROOM VIEW -->
+  <section class="view" id="view-control">
+    <nav class="tabs" id="controlSubTabs">
+      <button class="tab-btn active" data-subview="artists">Artists</button>
+      <button class="tab-btn" data-subview="sets">Sets</button>
+    </nav>
+
+    <div id="controlsub-artists">
+      <div id="artistListWrap">
+        <div class="panel">
+          <h2>All artists</h2>
+          <div id="artistList"></div>
+          <p class="empty-note" id="artistListEmpty" hidden>No artists have joined yet.</p>
+        </div>
+      </div>
+      <div id="artistDetailWrap" hidden>
+        <button class="back-link" id="backToArtists">← Back to all artists</button>
+        <div class="panel">
+          <h2 id="artistDetailName"></h2>
+          <p class="panel-sub" id="artistDetailBio"></p>
+          <div class="social-links" id="artistDetailLinks"></div>
+        </div>
+        <div class="panel">
+          <h2>Designs</h2>
+          <div class="grid" id="artistDetailGrid"></div>
+          <p class="empty-note" id="artistDetailEmpty" hidden>No designs from this artist yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="controlsub-sets" hidden>
+      <div id="setListWrap">
+        <div class="panel">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <div>
+              <h2 style="margin-bottom:2px;">Card sets</h2>
+              <p class="panel-sub" style="margin-bottom:0;">Track progress on each collection.</p>
+            </div>
+            <button id="newSetBtn" class="btn btn-primary btn-small">+ New set</button>
+          </div>
+          <div id="setList"></div>
+          <p class="empty-note" id="setListEmpty" hidden>No sets created yet.</p>
+        </div>
+      </div>
+      <div id="setDetailWrap" hidden>
+        <button class="back-link" id="backToSets">← Back to all sets</button>
+        <div class="panel">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h2 id="setDetailName"></h2>
+            <div style="display:flex; gap:8px;">
+              <button id="editSetBtn" class="btn btn-ghost btn-small">Edit details</button>
+              <button id="deleteSetBtn" class="btn btn-danger btn-small">Delete set</button>
+            </div>
+          </div>
+          <p class="panel-sub" id="setDetailDesc"></p>
+          <div class="field">
+            <label>Progress notes</label>
+            <textarea id="setNotes" placeholder="Internal notes on where this set is at..."></textarea>
+          </div>
+          <button id="saveNotesBtn" class="btn btn-ghost btn-small">Save notes</button>
+        </div>
+        <div class="panel">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <h2 style="margin:0;">Cards in this set</h2>
+            <button id="addCardToSetBtn" class="btn btn-primary btn-small">+ Add card</button>
+          </div>
+          <div class="grid" id="setCardsGrid"></div>
+          <p class="empty-note" id="setCardsEmpty" hidden>No cards added yet.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- New/Edit Set Modal -->
+<div id="setModalOverlay" class="modal-overlay" hidden>
+  <div class="modal">
+    <h3 id="setModalTitle">New set</h3>
+    <form id="setForm">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" id="setFieldName" required placeholder="e.g. World Tour Vol. 1">
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="setFieldDescription" placeholder="What's this set about?"></textarea>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="setFieldStatus" style="background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 9px 10px; border-radius: 8px; font-size: 14px;">
+          <option value="planning">Planning</option>
+          <option value="in_production">In production</option>
+          <option value="released">Released</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="setModalCancel" class="btn btn-ghost">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add card to set modal -->
+<div id="pickCardOverlay" class="modal-overlay" hidden>
+  <div class="modal">
+    <h3>Add a card to this set</h3>
+    <input type="search" id="pickCardSearch" class="search-input" placeholder="Search by title or artist...">
+    <div id="pickCardList"></div>
+    <p class="empty-note" id="pickCardEmpty" hidden>No designs found.</p>
+    <div class="modal-actions">
+      <button type="button" id="pickCardClose" class="btn btn-ghost">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
+<script>
+const OWNER_EMAIL = "dc.creatings@gmail.com";
+
+const firebaseConfig = {
+  projectId: "tattoo-tcg-hub",
+  appId: "1:592701744185:web:26c31c81ecb5dcd17a99e8",
+  storageBucket: "tattoo-tcg-hub.firebasestorage.app",
+  apiKey: "AIzaSyA4wNK56i41YTYScM_A97iRYfwG-_PmM9I",
+  authDomain: "tattoo-tcg-hub.firebaseapp.com",
+  messagingSenderId: "592701744185",
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+let currentUser = null;
+let isOwner = false;
+let myProfile = null;
+let myDesigns = [];
+let currentArtistId = null;
+let currentSetId = null;
+let allSetsCache = [];
+
+// ---------- Auth ----------
+
+const authGate = document.getElementById("authGate");
+const authError = document.getElementById("authError");
+const appRoot = document.getElementById("appRoot");
+
+document.getElementById("signInBtn").addEventListener("click", () => {
+  authError.hidden = true;
+  auth.signInWithPopup(googleProvider).catch((err) => {
+    authError.textContent = `Sign-in failed: ${err.message}`;
+    authError.hidden = false;
+  });
+});
+
+document.getElementById("signOutBtn").addEventListener("click", () => auth.signOut());
+
+auth.onAuthStateChanged(async (user) => {
+  currentUser = user;
+  if (!user) {
+    authGate.hidden = false;
+    appRoot.hidden = true;
+    return;
+  }
+
+  authGate.hidden = true;
+  appRoot.hidden = false;
+  isOwner = user.email === OWNER_EMAIL;
+
+  document.getElementById("userAvatar").src = user.photoURL || "";
+  document.getElementById("userName").textContent = user.displayName || user.email || "";
+  document.getElementById("ownerBadge").hidden = !isOwner;
+  document.getElementById("controlTabBtn").hidden = !isOwner;
+
+  await ensureArtistProfile();
+  loadMyProfileIntoForm();
+  subscribeMyDesigns();
+});
+
+async function ensureArtistProfile() {
+  const ref = db.collection("artists").doc(currentUser.uid);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    myProfile = {
+      displayName: currentUser.displayName || "",
+      bio: "",
+      socialLinks: [],
+      email: currentUser.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    await ref.set(myProfile);
+  } else {
+    myProfile = snap.data();
+  }
+}
+
+// ---------- Tabs ----------
+
+document.getElementById("mainTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".tab-btn");
+  if (!btn) return;
+  [...document.querySelectorAll("#mainTabs .tab-btn")].forEach((b) => b.classList.toggle("active", b === btn));
+  document.getElementById("view-studio").classList.toggle("active", btn.dataset.view === "studio");
+  document.getElementById("view-control").classList.toggle("active", btn.dataset.view === "control");
+  if (btn.dataset.view === "control") {
+    const activeSub = document.querySelector("#controlSubTabs .tab-btn.active");
+    if (activeSub?.dataset.subview === "sets") loadSetList();
+    else loadArtistList();
+  }
+});
+
+document.getElementById("controlSubTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".tab-btn");
+  if (!btn) return;
+  [...document.querySelectorAll("#controlSubTabs .tab-btn")].forEach((b) => b.classList.toggle("active", b === btn));
+  document.getElementById("controlsub-artists").hidden = btn.dataset.subview !== "artists";
+  document.getElementById("controlsub-sets").hidden = btn.dataset.subview !== "sets";
+  if (btn.dataset.subview === "artists") loadArtistList();
+  if (btn.dataset.subview === "sets") loadSetList();
+});
+
+// ---------- Profile ----------
+
+function loadMyProfileIntoForm() {
+  document.getElementById("profileName").value = myProfile.displayName || "";
+  document.getElementById("profileBio").value = myProfile.bio || "";
+  renderSocialLinksEditor(myProfile.socialLinks || []);
+}
+
+function renderSocialLinksEditor(links) {
+  const wrap = document.getElementById("socialLinksList");
+  wrap.innerHTML = "";
+  const list = links.length ? links : [{ label: "", url: "" }];
+  list.forEach((link) => addSocialRow(link.label, link.url));
+}
+
+function addSocialRow(label = "", url = "") {
+  const wrap = document.getElementById("socialLinksList");
+  const row = document.createElement("div");
+  row.className = "social-row";
+  row.innerHTML = `
+    <input type="text" placeholder="Instagram, Website..." class="social-label" value="${escapeAttr(label)}">
+    <input type="url" placeholder="https://..." class="social-url" value="${escapeAttr(url)}">
+    <button type="button" class="btn btn-ghost btn-small remove-social">✕</button>
+  `;
+  row.querySelector(".remove-social").onclick = () => row.remove();
+  wrap.appendChild(row);
+}
+
+document.getElementById("addSocialBtn").addEventListener("click", () => addSocialRow());
+
+document.getElementById("saveProfileBtn").addEventListener("click", async () => {
+  const socialLinks = [...document.querySelectorAll("#socialLinksList .social-row")]
+    .map((row) => ({
+      label: row.querySelector(".social-label").value.trim(),
+      url: row.querySelector(".social-url").value.trim(),
+    }))
+    .filter((l) => l.label || l.url);
+
+  const data = {
+    displayName: document.getElementById("profileName").value.trim(),
+    bio: document.getElementById("profileBio").value.trim(),
+    socialLinks,
+  };
+  await db.collection("artists").doc(currentUser.uid).update(data);
+  myProfile = { ...myProfile, ...data };
+  alert("Profile saved.");
+});
+
+// ---------- Image compression ----------
+
+function compressImage(file, maxDim = 900, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---------- My designs ----------
+
+let unsubscribeMyDesigns = null;
+
+function subscribeMyDesigns() {
+  if (unsubscribeMyDesigns) unsubscribeMyDesigns();
+  unsubscribeMyDesigns = db
+    .collection("artists")
+    .doc(currentUser.uid)
+    .collection("designs")
+    .onSnapshot((snap) => {
+      myDesigns = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderMyDesigns();
+    });
+}
+
+function renderMyDesigns() {
+  const grid = document.getElementById("myDesignsGrid");
+  grid.innerHTML = "";
+  document.getElementById("myDesignsEmpty").hidden = myDesigns.length > 0;
+  for (const design of myDesigns) {
+    grid.appendChild(
+      buildCardTile(design, [
+        { label: "Delete", onClick: () => deleteMyDesign(design.id) },
+      ])
+    );
+  }
+}
+
+function buildCardTile(design, actions) {
+  const tile = document.createElement("div");
+  tile.className = "card-tile";
+  tile.innerHTML = `
+    <img src="${design.imageData || ""}" alt="${escapeAttr(design.title || "")}">
+    <div class="card-tile-body">
+      <div class="card-tile-title">${escapeHtml(design.title || "Untitled")}</div>
+      <div class="card-tile-desc">${escapeHtml(design.description || "")}</div>
+      <div class="card-tile-actions"></div>
+    </div>
+  `;
+  const actionsWrap = tile.querySelector(".card-tile-actions");
+  for (const action of actions) {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-ghost btn-small";
+    btn.textContent = action.label;
+    btn.onclick = action.onClick;
+    actionsWrap.appendChild(btn);
+  }
+  return tile;
+}
+
+document.getElementById("designForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fileInput = document.getElementById("designImage");
+  const submitBtn = document.getElementById("submitDesignBtn");
+  if (!fileInput.files[0]) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Uploading...";
+  try {
+    const imageData = await compressImage(fileInput.files[0]);
+    await db.collection("artists").doc(currentUser.uid).collection("designs").add({
+      title: document.getElementById("designTitle").value.trim(),
+      description: document.getElementById("designDescription").value.trim(),
+      imageData,
+      artistName: myProfile.displayName || currentUser.displayName || "",
+      licenseAgreed: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    e.target.reset();
+  } catch (err) {
+    alert(`Upload failed: ${err.message}`);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Submit design";
+  }
+});
+
+function deleteMyDesign(id) {
+  if (!confirm("Delete this design?")) return;
+  db.collection("artists").doc(currentUser.uid).collection("designs").doc(id).delete();
+}
+
+// ---------- Control Room: Artists ----------
+
+async function loadArtistList() {
+  document.getElementById("artistListWrap").hidden = false;
+  document.getElementById("artistDetailWrap").hidden = true;
+  const listEl = document.getElementById("artistList");
+  listEl.innerHTML = "<p class='empty-note'>Loading...</p>";
+
+  const snap = await db.collection("artists").get();
+  const artists = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+  listEl.innerHTML = "";
+  document.getElementById("artistListEmpty").hidden = artists.length > 0;
+
+  for (const artist of artists) {
+    const countSnap = await db.collection("artists").doc(artist.id).collection("designs").get();
+    const row = document.createElement("div");
+    row.className = "artist-row";
+    row.innerHTML = `
+      <div class="artist-avatar" style="background:${avatarColor(artist.displayName || artist.email || "?")}">${initials(artist.displayName || artist.email || "?")}</div>
+      <div class="artist-info">
+        <div class="artist-name">${escapeHtml(artist.displayName || "(unnamed artist)")}</div>
+        <div class="artist-bio">${escapeHtml(artist.bio || "")}</div>
+      </div>
+      <div class="artist-count">${countSnap.size} design${countSnap.size === 1 ? "" : "s"}</div>
+    `;
+    row.onclick = () => openArtistDetail(artist);
+    listEl.appendChild(row);
+  }
+}
+
+async function openArtistDetail(artist) {
+  currentArtistId = artist.id;
+  document.getElementById("artistListWrap").hidden = true;
+  document.getElementById("artistDetailWrap").hidden = false;
+  document.getElementById("artistDetailName").textContent = artist.displayName || "(unnamed artist)";
+  document.getElementById("artistDetailBio").textContent = artist.bio || "";
+
+  const linksWrap = document.getElementById("artistDetailLinks");
+  linksWrap.innerHTML = "";
+  for (const link of artist.socialLinks || []) {
+    if (!link.url) continue;
+    const a = document.createElement("a");
+    a.href = link.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = link.label || link.url;
+    linksWrap.appendChild(a);
+  }
+
+  const grid = document.getElementById("artistDetailGrid");
+  grid.innerHTML = "<p class='empty-note'>Loading...</p>";
+  const snap = await db.collection("artists").doc(artist.id).collection("designs").get();
+  const designs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  grid.innerHTML = "";
+  document.getElementById("artistDetailEmpty").hidden = designs.length > 0;
+  for (const design of designs) {
+    grid.appendChild(buildCardTile(design, []));
+  }
+}
+
+document.getElementById("backToArtists").addEventListener("click", loadArtistList);
+
+// ---------- Control Room: Sets ----------
+
+async function loadSetList() {
+  document.getElementById("setListWrap").hidden = false;
+  document.getElementById("setDetailWrap").hidden = true;
+  const listEl = document.getElementById("setList");
+  listEl.innerHTML = "<p class='empty-note'>Loading...</p>";
+
+  const snap = await db.collection("sets").orderBy("createdAt", "desc").get();
+  allSetsCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+  listEl.innerHTML = "";
+  document.getElementById("setListEmpty").hidden = allSetsCache.length > 0;
+
+  for (const set of allSetsCache) {
+    const row = document.createElement("div");
+    row.className = "set-row";
+    const cardCount = (set.cardRefs || []).length;
+    row.innerHTML = `
+      <div>
+        <div class="set-name">${escapeHtml(set.name)}</div>
+        <div class="set-meta">${cardCount} card${cardCount === 1 ? "" : "s"}</div>
+      </div>
+      <span class="status-badge ${set.status}">${(set.status || "planning").replace("_", " ")}</span>
+    `;
+    row.onclick = () => openSetDetail(set.id);
+    listEl.appendChild(row);
+  }
+}
+
+document.getElementById("newSetBtn").addEventListener("click", () => openSetModal(null));
+
+function openSetModal(setId) {
+  const modal = document.getElementById("setModalOverlay");
+  const set = setId ? allSetsCache.find((s) => s.id === setId) : null;
+  document.getElementById("setModalTitle").textContent = set ? "Edit set" : "New set";
+  document.getElementById("setFieldName").value = set ? set.name : "";
+  document.getElementById("setFieldDescription").value = set ? set.description || "" : "";
+  document.getElementById("setFieldStatus").value = set ? set.status || "planning" : "planning";
+  modal.dataset.editingId = setId || "";
+  modal.hidden = false;
+}
+
+document.getElementById("setModalCancel").addEventListener("click", () => {
+  document.getElementById("setModalOverlay").hidden = true;
+});
+
+document.getElementById("setForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const modal = document.getElementById("setModalOverlay");
+  const editingId = modal.dataset.editingId;
+  const data = {
+    name: document.getElementById("setFieldName").value.trim(),
+    description: document.getElementById("setFieldDescription").value.trim(),
+    status: document.getElementById("setFieldStatus").value,
+  };
+  if (editingId) {
+    await db.collection("sets").doc(editingId).update(data);
+  } else {
+    await db.collection("sets").add({
+      ...data,
+      notes: "",
+      cardRefs: [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+  modal.hidden = true;
+  if (editingId && currentSetId === editingId) {
+    openSetDetail(editingId);
+  } else {
+    loadSetList();
+  }
+});
+
+async function openSetDetail(setId) {
+  currentSetId = setId;
+  document.getElementById("setListWrap").hidden = true;
+  document.getElementById("setDetailWrap").hidden = false;
+
+  const doc = await db.collection("sets").doc(setId).get();
+  const set = { id: doc.id, ...doc.data() };
+  const idx = allSetsCache.findIndex((s) => s.id === setId);
+  if (idx >= 0) allSetsCache[idx] = set; else allSetsCache.push(set);
+
+  document.getElementById("setDetailName").textContent = set.name;
+  document.getElementById("setDetailDesc").textContent = set.description || "";
+  document.getElementById("setNotes").value = set.notes || "";
+
+  const grid = document.getElementById("setCardsGrid");
+  grid.innerHTML = "<p class='empty-note'>Loading...</p>";
+  const cardRefs = set.cardRefs || [];
+  document.getElementById("setCardsEmpty").hidden = cardRefs.length > 0;
+  grid.innerHTML = "";
+
+  for (const ref of cardRefs) {
+    try {
+      const designDoc = await db.collection("artists").doc(ref.artistId).collection("designs").doc(ref.designId).get();
+      if (!designDoc.exists) continue;
+      const design = designDoc.data();
+      grid.appendChild(
+        buildCardTile(design, [
+          { label: "Remove", onClick: () => removeCardFromSet(ref) },
+        ])
+      );
+    } catch {
+      // skip designs that fail to load
+    }
+  }
+}
+
+document.getElementById("backToSets").addEventListener("click", loadSetList);
+document.getElementById("editSetBtn").addEventListener("click", () => openSetModal(currentSetId));
+
+document.getElementById("deleteSetBtn").addEventListener("click", async () => {
+  if (!confirm("Delete this entire set? This can't be undone.")) return;
+  await db.collection("sets").doc(currentSetId).delete();
+  loadSetList();
+});
+
+document.getElementById("saveNotesBtn").addEventListener("click", async () => {
+  await db.collection("sets").doc(currentSetId).update({ notes: document.getElementById("setNotes").value });
+  alert("Notes saved.");
+});
+
+async function removeCardFromSet(ref) {
+  const setRef = db.collection("sets").doc(currentSetId);
+  const doc = await setRef.get();
+  const cardRefs = (doc.data().cardRefs || []).filter(
+    (r) => !(r.artistId === ref.artistId && r.designId === ref.designId)
+  );
+  await setRef.update({ cardRefs });
+  openSetDetail(currentSetId);
+}
+
+// ---------- Add card to set (collection group search) ----------
+
+let allDesignsCache = null;
+
+document.getElementById("addCardToSetBtn").addEventListener("click", async () => {
+  document.getElementById("pickCardOverlay").hidden = false;
+  document.getElementById("pickCardSearch").value = "";
+  document.getElementById("pickCardList").innerHTML = "<p class='empty-note'>Loading all designs...</p>";
+  if (!allDesignsCache) {
+    const snap = await db.collectionGroup("designs").get();
+    allDesignsCache = snap.docs.map((d) => ({
+      id: d.id,
+      artistId: d.ref.parent.parent.id,
+      ...d.data(),
+    }));
+  }
+  renderPickList(allDesignsCache);
+});
+
+function renderPickList(designs) {
+  const listEl = document.getElementById("pickCardList");
+  listEl.innerHTML = "";
+  document.getElementById("pickCardEmpty").hidden = designs.length > 0;
+  for (const design of designs) {
+    const row = document.createElement("div");
+    row.className = "pick-row";
+    row.innerHTML = `
+      <img class="pick-thumb" src="${design.imageData || ""}" alt="">
+      <div class="pick-info">
+        <div class="pick-title">${escapeHtml(design.title || "Untitled")}</div>
+        <div class="pick-artist">${escapeHtml(design.artistName || "")}</div>
+      </div>
+      <button class="btn btn-primary btn-small">Add</button>
+    `;
+    const addBtn = row.querySelector("button");
+    const currentSet = allSetsCache.find((s) => s.id === currentSetId);
+    const alreadyIn = currentSet?.cardRefs?.some((r) => r.artistId === design.artistId && r.designId === design.id);
+    if (alreadyIn) {
+      addBtn.textContent = "Added ✓";
+      addBtn.disabled = true;
+    } else {
+      addBtn.onclick = async () => {
+        addBtn.disabled = true;
+        addBtn.textContent = "Adding...";
+        await addCardToSet(design);
+        addBtn.textContent = "Added ✓";
+      };
+    }
+    listEl.appendChild(row);
+  }
+}
+
+document.getElementById("pickCardSearch").addEventListener("input", (e) => {
+  if (!allDesignsCache) return;
+  const term = e.target.value.toLowerCase();
+  const filtered = allDesignsCache.filter(
+    (d) =>
+      (d.title || "").toLowerCase().includes(term) ||
+      (d.artistName || "").toLowerCase().includes(term)
+  );
+  renderPickList(filtered);
+});
+
+document.getElementById("pickCardClose").addEventListener("click", () => {
+  document.getElementById("pickCardOverlay").hidden = true;
+});
+
+async function addCardToSet(design) {
+  const setRef = db.collection("sets").doc(currentSetId);
+  const doc = await setRef.get();
+  const cardRefs = doc.data().cardRefs || [];
+  if (cardRefs.some((r) => r.artistId === design.artistId && r.designId === design.id)) return;
+  cardRefs.push({ artistId: design.artistId, designId: design.id, title: design.title || "" });
+  await setRef.update({ cardRefs });
+  openSetDetail(currentSetId);
+}
+
+// ---------- Helpers ----------
+
+function avatarColor(name) {
+  const hues = [340, 210, 260, 160, 20, 40, 190];
+  let hash = 0;
+  for (const ch of name) hash = ch.charCodeAt(0) + ((hash << 5) - hash);
+  return `hsl(${hues[Math.abs(hash) % hues.length]}, 65%, 58%)`;
+}
+
+function initials(name) {
+  return name.trim().slice(0, 2).toUpperCase();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str || "";
+  return div.innerHTML;
+}
+
+function escapeAttr(str) {
+  return escapeHtml(str).replace(/"/g, "&quot;");
+}
+</script>
+</body>
+</html>

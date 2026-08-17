@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner() {
+      return request.auth != null && request.auth.token.email == 'dc.creatings@gmail.com';
+    }
+    function isSelf(artistId) {
+      return request.auth != null && request.auth.uid == artistId;
+    }
+
+    match /artists/{artistId} {
+      allow read, write: if isSelf(artistId) || isOwner();
+
+      match /designs/{designId} {
+        allow read, write: if isSelf(artistId) || isOwner();
+      }
+    }
+
+    match /sets/{setId} {
+      allow read, write: if isOwner();
+    }
+
+    // Lets the owner run a cross-artist collection-group search
+    // (the "Add card to set" browser); per-artist rule above doesn't
+    // cover collection-group queries on its own.
+    match /{path=**}/designs/{designId} {
+      allow read: if isOwner();
+    }
+  }
+}
